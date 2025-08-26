@@ -5,13 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d4dc570b-ef46-4d39-ad41-feafca3ecdac" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/screens/login_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/register_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/splash_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/services/api_service/dart.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/colors.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/1.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/2.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/images/splash/3.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/providers/app_state.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/screens/home_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/screens/loading_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/app_theme.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/viewmodel/splash_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/splash_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shop_flutter_mvvm.iml" beforeDir="false" afterPath="$PROJECT_DIR$/shop_flutter_mvvm.iml" afterDir="false" />
     </list>
@@ -79,6 +90,11 @@
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="M:\project\shop_flutter_mvvm\assets\images" />
+    </key>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="d4dc570b-ef46-4d39-ad41-feafca3ecdac" name="Changes" comment="" />
