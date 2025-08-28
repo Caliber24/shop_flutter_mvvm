@@ -5,41 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d4dc570b-ef46-4d39-ad41-feafca3ecdac" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/models/auth_user.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/models/product.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/auth_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/providers/product_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/cart_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/category_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/profile_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/screens/sign_up_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/services/api_service.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/utils/constants.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/login_view_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/viewmodel/signup_view_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widget/app_bottom_nav.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widget/app_header.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widget/auth_widgets.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/widget/product_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widget/category_pill.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/widget/section_header.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/providers/app_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/app_state_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/app_shell.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/app_shell.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/loading_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/pre_home_loader.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/screens/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/register_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/auth_tokens.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/splash_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/api_service/dart.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/viewmodel/splash_viewmodel.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shop_flutter_mvvm.iml" beforeDir="false" afterPath="$PROJECT_DIR$/shop_flutter_mvvm.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screens/pre_home_loader.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/pre_home_loader.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widget/app_bottom_nav.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widget/app_bottom_nav.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widget/app_header.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widget/app_header.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widget/product_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widget/product_card.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

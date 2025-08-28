@@ -1,3 +1,4 @@
+// lib/widget/app_header.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -45,7 +46,14 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
-          child: CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar)),
+          child: Container(
+            padding: const EdgeInsets.all(2), // ضخامت Border
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.yellowPrimary, width: 2),
+            ),
+            child: CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar)),
+          ),
         ),
       ],
     );

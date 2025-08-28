@@ -7,6 +7,7 @@ import '../utils/constants.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'splash_screen.dart';
+import 'app_shell.dart';
 
 class PreHomeLoader extends StatefulWidget {
   const PreHomeLoader({super.key});
@@ -62,7 +63,7 @@ class _PreHomeLoaderState extends State<PreHomeLoader> with SingleTickerProvider
         try {
           await auth.fetchMe();
           app.setStatus(AppStatus.loggedIn);
-          targetPage = const HomeScreen();
+          targetPage =  const AppShell();
         } catch (_) {
           app.setStatus(AppStatus.loggedOut);
           targetPage = LoginScreen();

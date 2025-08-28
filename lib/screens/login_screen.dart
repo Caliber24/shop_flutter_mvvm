@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_flutter_mvvm/screens/app_shell.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
 import '../viewmodel/login_view_model.dart';
@@ -85,7 +86,7 @@ class LoginScreen extends StatelessWidget {
                                       context.read<AppStateProvider>().status == AppStatus.loggedIn) {
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                      MaterialPageRoute(builder: (_) => const AppShell()),
                                     );
                                   }
                                 },
