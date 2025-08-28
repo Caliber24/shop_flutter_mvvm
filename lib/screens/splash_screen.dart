@@ -1,7 +1,21 @@
+// lib/screens/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/colors.dart';
-import '../viewmodel/splash_viewmodel.dart';
+import '../providers/app_state_provider.dart';
+import 'login_screen.dart';
+
+class SplashViewModel extends ChangeNotifier {
+  int _currentPage = 0;
+  int get currentPage => _currentPage;
+
+  final PageController pageController = PageController();
+
+  void setPage(int page) {
+    _currentPage = page;
+    notifyListeners();
+  }
+}
 
 class SplashScreen extends StatelessWidget {
   final List<Map<String, String>> splashData = [
@@ -33,7 +47,6 @@ class SplashScreen extends StatelessWidget {
             body: SafeArea(
               child: Column(
                 children: [
-                  /// PageView
                   Expanded(
                     child: PageView.builder(
                       controller: viewModel.pageController,
@@ -44,13 +57,12 @@ class SplashScreen extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
+                            SizedBox(
                               height: MediaQuery.of(context).size.height * 0.4,
                               child: AnimatedSwitcher(
-                                duration: Duration(milliseconds: 600),
+                                duration: const Duration(milliseconds: 600),
                                 transitionBuilder: (child, animation) =>
-                                    ScaleTransition(
-                                        scale: animation, child: child),
+                                    ScaleTransition(scale: animation, child: child),
                                 child: Image.asset(
                                   splashData[index]["image"]!,
                                   key: ValueKey(index),
@@ -58,24 +70,20 @@ class SplashScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-
-                            SizedBox(height: 30),
-
+                            const SizedBox(height: 30),
                             Text(
                               splashData[index]["title"]!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.gray,
                               ),
                               textAlign: TextAlign.center,
                             ),
-
-                            SizedBox(height: 12),
-
+                            const SizedBox(height: 12),
                             Text(
                               splashData[index]["description"]!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 color: AppColors.iconColor,
                                 height: 1.5,
@@ -87,15 +95,13 @@ class SplashScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  /// Indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       splashData.length,
                           (index) => AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.symmetric(horizontal: 5),
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
                         height: 8,
                         width: viewModel.currentPage == index ? 28 : 8,
                         decoration: BoxDecoration(
@@ -107,52 +113,44 @@ class SplashScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  SizedBox(height: 30),
-
-                  /// Bottom Buttons
+                  const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        /// Skip Button
                         if (viewModel.currentPage != splashData.length - 1)
                           TextButton(
                             onPressed: () {
-                              viewModel.pageController
-                                  .jumpToPage(splashData.length - 1);
+                              viewModel.pageController.jumpToPage(splashData.length - 1);
                             },
-                            child: Text(
+                            child: const Text(
                               "Skip",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.gray,
-                              ),
+                              style: TextStyle(fontSize: 16, color: AppColors.gray),
                             ),
                           )
                         else
-                          SizedBox(width: 60),
-
-                        Spacer(),
-
-                        /// Next / Get Started
+                          const SizedBox(width: 60),
+                        const Spacer(),
                         TextButton(
-                          onPressed: () {
-                            if (viewModel.currentPage ==
-                                splashData.length - 1) {
-                              // TODO: بعداً به Login یا RootScreen منتقل بشه
+                          onPressed: () async {
+                            if (viewModel.currentPage == splashData.length - 1) {
+                              // فقط وقتی به آخر رسیدیم: first_time=false و برو لاگین
+                              await context.read<AppStateProvider>().setFirstTimeDone();
+                              if (!context.mounted) return;
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => LoginScreen()),
+                              );
                             } else {
                               viewModel.pageController.nextPage(
-                                duration: Duration(milliseconds: 500),
+                                duration: const Duration(milliseconds: 500),
                                 curve: Curves.easeInOut,
                               );
                             }
                           },
                           child: Text(
-                            viewModel.currentPage == splashData.length - 1
-                                ? "Get Started"
-                                : "Next",
-                            style: TextStyle(
+                            viewModel.currentPage == splashData.length - 1 ? "Get Started" : "Next",
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppColors.yellowPrimary,
@@ -162,8 +160,7 @@ class SplashScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

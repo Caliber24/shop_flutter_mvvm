@@ -1,162 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
+import '../viewmodel/login_view_model.dart';
+import '../widget/auth_widgets.dart';
+import 'sign_up_screen.dart';
+import 'home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
+class LoginScreen extends StatelessWidget {
+  LoginScreen({super.key});
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _login(BuildContext context) {
-    if (_formKey.currentState!.validate()) {
-      final appState = Provider.of<AppStateProvider>(context, listen: false);
-
-      // وقتی کاربر لاگین می‌کنه، اول میره تو حالت Loading
-      appState.setStatus(AppStatus.loading);
-
-      Future.delayed(Duration(seconds: 2), () {
-        appState.setStatus(AppStatus.loggedIn);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 40),
-                Text(
-                  "Welcome Back 👋",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.yellowPrimary,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Please login to your account",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.gray,
-                  ),
-                ),
-                SizedBox(height: 40),
-
-                /// Email
-                TextFormField(
-                  controller: _emailController,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: "Email",
-                    labelStyle: TextStyle(color: AppColors.gray),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.grayBlack),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.yellowPrimary),
-                    ),
-                  ),
-                  validator: (value) =>
-                  value!.isEmpty ? "Enter your email" : null,
-                ),
-                SizedBox(height: 20),
-
-                /// Password
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    labelStyle: TextStyle(color: AppColors.gray),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.grayBlack),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.yellowPrimary),
-                    ),
-                  ),
-                  validator: (value) =>
-                  value!.isEmpty ? "Enter your password" : null,
-                ),
-                SizedBox(height: 30),
-
-                /// Login Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellowPrimary,
-                      foregroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () => _login(context),
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                Spacer(),
-
-                /// Register hint
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+    return ChangeNotifierProvider(
+      create: (_) => LoginViewModel(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Consumer<LoginViewModel>(
+            builder: (context, vm, _) {
+              return SingleChildScrollView(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Don’t have an account? ",
-                      style: TextStyle(color: AppColors.gray),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        // اینجا می‌تونی کاربر رو به صفحه ثبت‌نام ببری
-                      },
-                      child: Text(
-                        "Sign Up",
-                        style: TextStyle(
-                          color: AppColors.yellowPrimary,
-                          fontWeight: FontWeight.bold,
+                    const CurvedHeader(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            "Sign in",
+                            style: TextStyle(
+                              color: AppColors.yellowPrimary,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 36,
+                            ),
+                          ),
                         ),
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: FrostedCard(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: vm.usernameCtrl,
+                                decoration: authInput('Username', 'demo user', icon: Icons.person_outline),
+                                validator: (v) => (v == null || v.isEmpty) ? 'please enter username' : null,
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: vm.passwordCtrl,
+                                obscureText: vm.obscure,
+                                enableSuggestions: false,
+                                autocorrect: false,
+                                autofillHints: const [AutofillHints.password],
+                                decoration: authInput('Password', '••••••••', icon: Icons.lock_outline).copyWith(
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      vm.obscure ? Icons.visibility_off : Icons.visibility,
+                                      color: AppColors.gray,
+                                    ),
+                                    onPressed: vm.toggleObscure,
+                                  ),
+                                ),
+                                validator: (v) => (v == null || v.length < 4) ? 'Password is too short' : null,
+                              ),
+                              const SizedBox(height: 10),
+                              PrimaryButton(
+                                text: vm.loading ? 'Please wait...' : 'Login',
+                                icon: Icons.login_rounded,
+                                onPressed: () async {
+                                  if (vm.loading) return;
+                                  if (!(_formKey.currentState?.validate() ?? false)) return;
+
+                                  await vm.submit(context);
+
+                                  if (context.mounted &&
+                                      context.read<AppStateProvider>().status == AppStatus.loggedIn) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                    );
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('Don\'t have an account? ', style: TextStyle(color: AppColors.gray)),
+                                  GestureDetector(
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                                    ),
+                                    child: const Text(
+                                      'Sign up',
+                                      style: TextStyle(color: AppColors.yellowPrimary, fontWeight: FontWeight.w800),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                   ],
                 ),
-                SizedBox(height: 20),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
