@@ -6,14 +6,33 @@ import '../utils/colors.dart';
 import '../widget/product_card.dart';
 import '../widget/section_header.dart';
 import '../widget/category_pill.dart';
+import './product_screen.dart';
+import 'product_detail_screen.dart';
+import '../models/category.dart';
+import '../utils/category_icons.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  final VoidCallback? onSeeAllCategories;
+
+  const HomeScreen({super.key, this.onSeeAllCategories});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<List<Category>> _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesFuture = ApiService().fetchCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ProductProvider(ApiService())..loadPopular(),
+      create: (_) => ProductProvider(ApiService()), // category=null → Popular
       child: Consumer<ProductProvider>(
         builder: (_, vm, __) {
           return SingleChildScrollView(
@@ -21,7 +40,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // -------- Hero Banner (Carousel)
+                // Hero Banner
                 SizedBox(
                   height: 180,
                   child: PageView(
@@ -33,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                         c1: Color(0xFFFFC371),
                         c2: Color(0xFFFF5F6D),
                         image:
-                        'https://images.unsplash.com/photo-1585386959984-a41552231658?w=1200&q=80',
+                            'https://images.unsplash.com/photo-1585386959984-a41552231658?w=1200&q=80',
                       ),
                       _PromoCard(
                         title: 'Summer Essentials',
@@ -41,53 +60,126 @@ class HomeScreen extends StatelessWidget {
                         c1: Color(0xFF6EE7F9),
                         c2: Color(0xFF736EFE),
                         image:
-                        'https://images.unsplash.com/photo-1541643600914-78b084683601?w=1200&q=80',
+                            'https://images.unsplash.com/photo-1541643600914-78b084683601?w=1200&q=80',
                       ),
                     ],
                   ),
                 ),
 
-                // -------- Categories row
-                const SectionHeader('Product Categories', actionText: 'See all'),
+                // Categories row
+                SectionHeader(
+                  'Product Categories',
+                  actionText: 'See all',
+                  onActionTap: widget.onSeeAllCategories,
+                ),
                 SizedBox(
                   height: 110,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: const [
-                      CategoryPill(icon: Icons.spa_rounded, label: 'Fragrance'),
-                      CategoryPill(icon: Icons.local_florist_rounded, label: 'Bodycare'),
-                      CategoryPill(icon: Icons.brush_rounded, label: 'Haircare'),
-                      CategoryPill(icon: Icons.face_retouching_natural_rounded, label: 'Facial'),
-                      CategoryPill(icon: Icons.bubble_chart_rounded, label: 'Serum'),
-                      CategoryPill(icon: Icons.waves_rounded, label: 'Bath'),
-                    ],
+                  child: FutureBuilder<List<Category>>(
+                    future: _categoriesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            "Error: ${snapshot.error}",
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
+
+                      final categories = snapshot.data ?? [];
+                      if (categories.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "No categories found",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }
+
+                      final displayCategories = categories.length > 7
+                          ? categories.sublist(0, 7)
+                          : categories;
+
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: displayCategories.length,
+                        itemBuilder: (_, index) {
+                          final cat = displayCategories[index];
+                          return CategoryPill(
+                            icon: categoryIcons[cat.id] ?? Icons.category,
+                            label: cat.name,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ProductsScreen(categoryName: cat.name),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
 
-                // -------- Popular Products (Grid 2-column)
+                // Popular Products
                 const SectionHeader('Popular Products', actionText: 'View all'),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: vm.loading
                       ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(
-                      child: CircularProgressIndicator(color: AppColors.yellowPrimary),
-                    ),
-                  )
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.yellowPrimary,
+                            ),
+                          ),
+                        )
                       : vm.error != null
                       ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Center(
-                      child: Text(vm.error!,
-                          style: const TextStyle(color: Colors.red)),
-                    ),
-                  )
-                      : _ProductsGrid(products: vm.popular),
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              vm.error!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.78,
+                              ),
+                          itemCount: vm.displayedProducts.length.clamp(0, 10),
+                          itemBuilder: (_, i) => ProductCard(
+                            product: vm.displayedProducts[i],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProductDetailScreen(
+                                    productId: vm.displayedProducts[i].id,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                 ),
 
-                // -------- Promotion strip
+                // Promotion strip
                 const SectionHeader('Promotion'),
                 const _WidePromo(),
               ],
@@ -98,8 +190,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+// PromoCard & WidePromo همانند قبل
 
-/// ------- small promo card for carousel
+// ---------------- PromoCard ----------------
 class _PromoCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -119,7 +212,11 @@ class _PromoCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(colors: [c1, c2], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+          colors: [c1, c2],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Stack(
         children: [
@@ -128,8 +225,15 @@ class _PromoCard extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomRight,
               child: ClipRRect(
-                borderRadius: const BorderRadius.only(bottomRight: Radius.circular(16)),
-                child: Image.network(image, width: 180, height: 140, fit: BoxFit.cover),
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(16),
+                ),
+                child: Image.network(
+                  image,
+                  width: 180,
+                  height: 140,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -140,9 +244,14 @@ class _PromoCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Text(subtitle, style: const TextStyle(color: Colors.white70)),
                   const SizedBox(height: 12),
@@ -151,10 +260,18 @@ class _PromoCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: const Text('Shop Now', style: TextStyle(fontWeight: FontWeight.w800)),
+                    child: const Text(
+                      'Shop Now',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ],
               ),
@@ -166,7 +283,7 @@ class _PromoCard extends StatelessWidget {
   }
 }
 
-/// ------- products grid using your ProductCard
+// ---------------- ProductsGrid ----------------
 class _ProductsGrid extends StatelessWidget {
   final List products;
   const _ProductsGrid({required this.products});
@@ -176,7 +293,12 @@ class _ProductsGrid extends StatelessWidget {
     if (products.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: Text('No products yet', style: TextStyle(color: AppColors.gray))),
+        child: Center(
+          child: Text(
+            'No products yet',
+            style: TextStyle(color: AppColors.gray),
+          ),
+        ),
       );
     }
     return GridView.builder(
@@ -184,18 +306,18 @@ class _ProductsGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,            // 2 ستونه
+        crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.78,       // نسبت کارت‌ها
+        childAspectRatio: 0.78,
       ),
-      itemCount: products.length.clamp(0, 8), // اولین‌ها برای نمای اولیه
+      itemCount: products.length.clamp(0, 8),
       itemBuilder: (_, i) => ProductCard(product: products[i]),
     );
   }
 }
 
-/// ------- bottom promotion banner
+// ---------------- WidePromo ----------------
 class _WidePromo extends StatelessWidget {
   const _WidePromo();
 

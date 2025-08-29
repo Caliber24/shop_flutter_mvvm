@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// viewmodels
+import 'viewmodel/app_header_viewmodel.dart';
+
 // screens
 import 'screens/pre_home_loader.dart';
 
 // providers
 import 'providers/app_state_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/category_provider.dart';
+import 'providers/product_provider.dart';
 
 // services
 import 'services/api_service.dart';
@@ -25,14 +30,21 @@ void main() async {
     await prefs.remove('first_time');
   }
 
-  final auth = AuthProvider(ApiService());
-  await auth.loadFromStorage(); // اوکیه، AppStateProvider هم load می‌کند؛ مشکلی ایجاد نمی‌شود.
+  final apiService = ApiService();
+  final auth = AuthProvider(apiService);
+  await auth.loadFromStorage();
 
   runApp(
     MultiProvider(
       providers: [
+        // Providers اصلی
         ChangeNotifierProvider(create: (_) => auth),
         ChangeNotifierProvider(create: (_) => AppStateProvider(auth)),
+        ChangeNotifierProvider(create: (_) => AppHeaderViewModel()),
+
+        // Providers داده‌ای
+        ChangeNotifierProvider(create: (_) => CategoryProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => ProductProvider(apiService)),
       ],
       child: const MyApp(),
     ),
