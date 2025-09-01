@@ -1,32 +1,101 @@
-// lib/screens/all_products_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/api_service.dart';
 import '../viewmodel/all_products_viewmodel.dart';
 import '../widget/product_card.dart';
-import '../models/product.dart';
 import '../models/category.dart';
 import '../utils/colors.dart';
 import '../utils/category_icons.dart';
 import 'product_detail_screen.dart';
+import '../services/api_service.dart';
+import '../viewmodel/cart_viewmodel.dart';
 
 class AllProductsScreen extends StatelessWidget {
-  final List<Category>? categories; // اختیاری
+  final List<Category>? categories;
   const AllProductsScreen({super.key, this.categories});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AllProductsViewModel>(
-      create: (_) => AllProductsViewModel(ApiService()),
-      child: _AllProductsView(categories: categories),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) =>
+              AllProductsViewModel(ApiService(), initialCategories: categories),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CartViewModel(),
+        ),
+      ],
+      child: const _AllProductsView(),
     );
   }
 }
 
-class _AllProductsView extends StatelessWidget {
-  final List<Category>? categories;
+class _AllProductsView extends StatefulWidget {
+  const _AllProductsView({super.key});
 
-  const _AllProductsView({this.categories});
+  @override
+  State<_AllProductsView> createState() => _AllProductsViewState();
+}
+
+class _AllProductsViewState extends State<_AllProductsView> {
+  bool searchMode = false;
+  final TextEditingController searchController = TextEditingController();
+
+  void _startSearch() => setState(() => searchMode = true);
+
+  void _exitSearch() {
+    searchController.clear();
+    setState(() => searchMode = false);
+    context.read<AllProductsViewModel>().setSearchQuery('');
+  }
+
+  void _openSortSheet(AllProductsViewModel vm) {
+    showModalBottomSheet(
+      backgroundColor: AppColors.background,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: SortOption.values.map((option) {
+            final selected = vm.sortOption == option;
+            String title;
+            switch (option) {
+              case SortOption.none:
+                title = 'No Sort';
+                break;
+              case SortOption.priceLowHigh:
+                title = 'Price: Low → High';
+                break;
+              case SortOption.priceHighLow:
+                title = 'Price: High → Low';
+                break;
+              case SortOption.titleAZ:
+                title = 'Title: A → Z';
+                break;
+              case SortOption.titleZA:
+                title = 'Title: Z → A';
+                break;
+              case SortOption.ratingHighLow:
+                title = 'Rating: High → Low';
+                break;
+            }
+            return ListTile(
+              title: Text(title, style: const TextStyle(color: Colors.white)),
+              trailing: selected ? const Icon(Icons.check, color: Colors.yellow) : null,
+              onTap: () {
+                vm.setSort(option);
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,161 +104,162 @@ class _AllProductsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('All Products'),
         backgroundColor: AppColors.background,
-        foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          PopupMenuButton<SortOption>(
-            onSelected: vm.setSort,
-            icon: const Icon(Icons.sort),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: SortOption.none, child: Text('No Sort')),
-              PopupMenuItem(value: SortOption.priceLowHigh, child: Text('Price: Low → High')),
-              PopupMenuItem(value: SortOption.priceHighLow, child: Text('Price: High → Low')),
-              PopupMenuItem(value: SortOption.titleAZ, child: Text('Title: A → Z')),
-              PopupMenuItem(value: SortOption.titleZA, child: Text('Title: Z → A')),
-            ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            if (searchMode) {
+              _exitSearch();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
+        title: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: searchMode ? Colors.white.withOpacity(0.3) : Colors.transparent,
+            ),
           ),
-          IconButton(icon: const Icon(Icons.clear_all), onPressed: vm.clearFilters),
+          child: TextField(
+            controller: searchController,
+            onChanged: vm.setSearchQuery,
+            onTap: _startSearch,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search, color: Colors.white70),
+              hintText: 'Search...',
+              hintStyle: const TextStyle(color: Colors.white60),
+              filled: true,
+              fillColor: Colors.transparent,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide.none,
+              ),
+              suffixIcon: searchMode
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.white70),
+                      onPressed: _exitSearch,
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sort, color: Colors.white),
+            onPressed: () => _openSortSheet(vm),
+          ),
         ],
       ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: vm.refresh,
-          child: vm.loading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.yellowPrimary),
-                )
-              : vm.error != null
-                  ? Center(
-                      child: Text(
-                        vm.error!,
-                        style: const TextStyle(color: Colors.red),
+      body: RefreshIndicator(
+        onRefresh: vm.refresh,
+        child: vm.loading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.yellowPrimary))
+            : vm.error != null
+                ? Center(
+                    child: Text(vm.error!, style: const TextStyle(color: Colors.red)))
+                : CustomScrollView(
+                    slivers: [
+                      // Categories
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 70,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            itemCount: vm.allCategories.length,
+                            itemBuilder: (_, i) {
+                              final cat = vm.allCategories[i];
+                              final selected = vm.selectedCategories.contains(cat.id);
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  label: Text(cat.name),
+                                  avatar: Icon(
+                                    categoryIcons[cat.id] ?? Icons.category,
+                                    size: 20,
+                                    color: selected ? Colors.black : Colors.white,
+                                  ),
+                                  selected: selected,
+                                  onSelected: (_) => vm.toggleCategory(cat.id),
+                                  backgroundColor: AppColors.itemBackground,
+                                  selectedColor: AppColors.yellowPrimary,
+                                  labelStyle: TextStyle(
+                                    color: selected ? Colors.black : Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    )
-                  : Column(
-                      children: [
-                        // Search
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: "Search products...",
-                              prefixIcon: const Icon(Icons.search),
-                              filled: true,
-                              fillColor: AppColors.itemBackground,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            onChanged: vm.setSearchQuery,
-                            style: const TextStyle(color: Colors.white),
+                      // Products grid
+                      SliverPadding(
+                        padding: const EdgeInsets.all(12),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.75,
                           ),
-                        ),
-
-                        // Category filter فقط اگر دسته‌بندی موجود بود
-                        if (categories != null && categories!.isNotEmpty)
-                          SizedBox(
-                            height: 70,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              itemCount: categories!.length,
-                              itemBuilder: (_, i) {
-                                final cat = categories![i];
-                                final selected = vm.selectedCategories.contains(cat.id);
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: ChoiceChip(
-                                    label: Text(cat.name),
-                                    selected: selected,
-                                    onSelected: (_) => vm.toggleCategory(cat.id),
-                                    backgroundColor: AppColors.itemBackground,
-                                    selectedColor: AppColors.yellowPrimary,
-                                    labelStyle: TextStyle(
-                                      color: selected ? Colors.black : Colors.white,
-                                    ),
-                                    avatar: Icon(
-                                      categoryIcons[cat.id] ?? Icons.category,
-                                      size: 20,
-                                      color: selected ? Colors.black : Colors.white,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-
-                        // Grid + Load More
-                        Expanded(
-                          child: ListView(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 12,
-                                    crossAxisSpacing: 12,
-                                    childAspectRatio: 0.78,
-                                  ),
-                                  itemCount: vm.filteredProducts.length,
-                                  itemBuilder: (_, i) {
-                                    final p = vm.filteredProducts[i];
-                                    return ProductCard(
-                                      product: p,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ProductDetailScreen(productId: p.id),
-                                          ),
-                                        );
-                                      },
-                                      onAdd: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Added "${p.title}"')),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-
-                              if (vm.canLoadMore)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    height: 48,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.yellowPrimary,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      onPressed: vm.loadMore,
-                                      child: const Text(
-                                        'Load more',
-                                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                                      ),
-                                    ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final product = vm.filteredProducts[index];
+                              return ProductCard(
+                                product: product,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ProductDetailScreen(productId: product.id),
                                   ),
                                 ),
-                            ],
+                              );
+                            },
+                            childCount: vm.filteredProducts.length,
                           ),
                         ),
-                      ],
-                    ),
-        ),
+                      ),
+                      // Load more button
+                      if (vm.canLoadMore)
+                        SliverPadding(
+                          padding: const EdgeInsets.all(16),
+                          sliver: SliverToBoxAdapter(
+                            child: SizedBox(
+                              height: 48,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: vm.loadMore,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.yellowPrimary,
+                                  foregroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Load more",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
       ),
     );
   }
 }
-

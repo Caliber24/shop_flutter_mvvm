@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'viewmodel/app_header_viewmodel.dart';
-
+import 'viewmodel/cart_viewmodel.dart';
 import 'screens/pre_home_loader.dart';
 
 import 'providers/app_state_provider.dart';
@@ -31,6 +31,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => CartViewModel()),
         ChangeNotifierProvider(create: (_) => auth),
         ChangeNotifierProvider(create: (_) => AppStateProvider(auth)),
         ChangeNotifierProvider(create: (_) => AppHeaderViewModel()),

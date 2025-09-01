@@ -1,21 +1,21 @@
-// lib/widget/product_card.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../viewmodel/cart_viewmodel.dart';
 import '../utils/colors.dart';
+import '../models/cart_item.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
   final EdgeInsetsGeometry? margin;
-  final VoidCallback? onTap; // کلیک روی تصویر یا متن
-  final VoidCallback? onAdd; // کلیک روی + 
+  final VoidCallback? onTap;
 
   const ProductCard({
     super.key,
     required this.product,
     this.margin,
     this.onTap,
-    this.onAdd,
   });
 
   @override
@@ -28,7 +28,16 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartViewModel>();
     final p = widget.product;
+
+    // امن: اگر هنوز محصول در کارت نیست، quantity برابر 0 قرار می‌دهیم
+    final quantity = cart.items
+            .firstWhere(
+              (e) => e.product.id == p.id,
+              orElse: () => CartItem(product: p, quantity: 0),
+            )
+            .quantity;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
@@ -55,7 +64,7 @@ class _ProductCardState extends State<ProductCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ===== Image area (کلیک روی عکس)
+                // تصویر محصول
                 Flexible(
                   flex: 6,
                   child: GestureDetector(
@@ -117,16 +126,14 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                   ),
                 ),
-
-                // ===== Info area
+                // اطلاعات محصول و کنترل تعداد
                 Flexible(
                   flex: 5,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // عنوان وسط چین و کمی فاصله از تصویر
                         GestureDetector(
                           onTap: widget.onTap,
                           child: Padding(
@@ -144,19 +151,45 @@ class _ProductCardState extends State<ProductCard> {
                             ),
                           ),
                         ),
-
                         const Spacer(),
-
-                        // قیمت + Add نزدیک کف کارت (غیر قابل کلیک برای رفتن به جزییات)
                         Row(
                           children: [
                             _PricePill(price: p.price),
                             const Spacer(),
-                            GestureDetector(
-                              onTap: widget.onAdd,
-                              behavior: HitTestBehavior.opaque,
-                              child: const _AddMiniButton(),
-                            ),
+                            if (quantity > 0)
+                              Row(
+                                children: [
+                                  _QuantityButton(
+                                    icon: Icons.remove,
+                                    onTap: () => cart.removeOne(p),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white24,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '$quantity',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  _QuantityButton(
+                                    icon: Icons.add,
+                                    onTap: () => cart.addProduct(p),
+                                  ),
+                                ],
+                              )
+                            else
+                              GestureDetector(
+                                onTap: () => cart.addProduct(p),
+                                behavior: HitTestBehavior.opaque,
+                                child: const _AddMiniButton(),
+                              ),
                           ],
                         ),
                       ],
@@ -171,6 +204,8 @@ class _ProductCardState extends State<ProductCard> {
     );
   }
 }
+
+// ---------------------- Widgets کمکی ----------------------
 
 class _FrostedChip extends StatelessWidget {
   final Widget child;
@@ -217,8 +252,7 @@ class _PricePill extends StatelessWidget {
       ),
       child: Text(
         '€${price.toStringAsFixed(2)}',
-        style: const TextStyle(
-            color: Colors.black, fontWeight: FontWeight.w900),
+        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900),
       ),
     );
   }
@@ -235,6 +269,27 @@ class _AddMiniButton extends StatelessWidget {
         height: 36,
         width: 36,
         child: Icon(Icons.add_rounded, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _QuantityButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _QuantityButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.all(6),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
