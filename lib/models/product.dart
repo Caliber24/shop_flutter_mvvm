@@ -6,6 +6,7 @@ class Product {
   final String thumbnail;
   final double price;
   final double rating;
+  final String? categoryId;
 
   Product({
     required this.id,
@@ -14,6 +15,7 @@ class Product {
     required this.thumbnail,
     required this.price,
     required this.rating,
+    this.categoryId,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {

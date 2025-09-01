@@ -1,13 +1,37 @@
 class Category {
-  final String name;
-  final String id;
+  final String id;   // slug, مثال: "womens-bags"
+  final String name; // user-friendly, مثال: "Womens Bags"
 
   Category({required this.id, required this.name});
 
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id']?.toString() ?? json['name'], // اگر API فقط اسم بده
-      name: json['name'] ?? json['title'] ?? json['id'],
-    );
+  /// ورودی API ممکنه String (slug) یا Map باشه — این سازنده هر دو رو پوشش میده
+  factory Category.fromApi(dynamic data) {
+    if (data == null) return Category(id: 'unknown', name: 'Unknown');
+
+    if (data is String) {
+      final slug = _normalizeSlug(data);
+      return Category(id: slug, name: _beautify(slug));
+    }
+
+    if (data is Map<String, dynamic>) {
+      // اگر API آبجکت داد، سعی کن slug واقعی رو استخراج کنی
+      final rawId = (data['id'] ?? data['slug'] ?? data['name'] ?? '').toString();
+      final slug = _normalizeSlug(rawId);
+      final name = (data['name'] ?? data['title'] ?? rawId).toString();
+      return Category(id: slug, name: name);
+    }
+
+    final s = data.toString();
+    final slug = _normalizeSlug(s);
+    return Category(id: slug, name: _beautify(slug));
+  }
+
+  static String _normalizeSlug(String s) {
+    return s.toLowerCase().trim().replaceAll(RegExp(r'[_\s]+'), '-');
+  }
+
+  static String _beautify(String slug) {
+    final words = slug.replaceAll('-', ' ').split(' ');
+    return words.map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1)).join(' ');
   }
 }

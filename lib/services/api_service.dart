@@ -1,3 +1,4 @@
+// lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/category.dart';
@@ -9,7 +10,6 @@ class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
   // -------------------- Generic Requests --------------------
-
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? headers,
@@ -59,49 +59,68 @@ class ApiService {
   }
 
   // -------------------- Categories --------------------
-
+  /// DummyJSON returns a JSON array of strings like:
+  ///   ["smartphones","laptops", ...]
+  /// بنابراین ما آن را به لیست Category تبدیل می‌کنیم
   Future<List<Category>> fetchCategories() async {
     final response = await _client.get(
-      Uri.parse('https://dummyjson.com/products/categories'),
+      Uri.parse('${Constants.baseUrl}/products/categories'),
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data
-          .map(
-            (e) => Category(
-              id: e['slug'].toString(), // یا هر فیلدی که یکتا هست
-              name: e['name'].toString(),
-            ),
-          )
-          .toList();
+      final decoded = jsonDecode(response.body);
+      if (decoded is List) {
+        return decoded.map<Category>((e) => Category.fromApi(e)).toList();
+      } else {
+        throw Exception('Unexpected categories response format');
+      }
     } else {
-      throw Exception('Failed to load categories');
+      throw Exception(
+        'Failed to load categories (status ${response.statusCode})',
+      );
     }
   }
 
   // -------------------- Products --------------------
 
-  Future<List<Product>> fetchProductsByCategory(String category) async {
-    final r = await get("/products/category/$category");
-    final List data = r["products"] as List<dynamic>;
+  /// گرفتن همه محصولات (با pagination)
+  Future<List<Product>> fetchAllProducts({
+    int limit = 100,
+    int skip = 0,
+  }) async {
+    final r = await get("/products?limit=$limit&skip=$skip");
+    final List data = (r["products"] ?? []) as List<dynamic>;
     return data
         .map((e) => Product.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
+  /// گرفتن محصولات یک دسته (توجه: category باید slug باشد)
+  Future<List<Product>> fetchProductsByCategory(
+    String category, {
+    int limit = 50,
+    int skip = 0,
+  }) async {
+    final encoded = Uri.encodeComponent(category);
+    final r = await get("/products/category/$encoded?limit=$limit&skip=$skip");
+    final List data = (r["products"] ?? []) as List<dynamic>;
+    return data
+        .map((e) => Product.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// محصولات محبوب (پیشنهادی)
   Future<List<Product>> fetchPopularProducts({int limit = 12}) async {
     final r = await get(
       "/products?limit=$limit&select=title,price,rating,thumbnail",
     );
-    final List data = r["products"] as List<dynamic>;
+    final List data = (r["products"] ?? []) as List<dynamic>;
     return data
         .map((e) => Product.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   // -------------------- Helper --------------------
-
   void _check(http.Response r) {
     if (r.statusCode < 200 || r.statusCode >= 300) {
       throw Exception('HTTP ${r.statusCode}: ${r.body}');

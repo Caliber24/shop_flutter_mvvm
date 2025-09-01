@@ -6,7 +6,6 @@ import '../utils/colors.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widget/auth_widgets.dart';
 import 'sign_up_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
