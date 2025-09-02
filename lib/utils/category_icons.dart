@@ -1,0 +1,28 @@
+import 'package:flutter/material.dart';
+// مپکردن آیکون ها و لیبل ها به هم
+final Map<String, IconData> categoryIcons = {
+  "beauty": Icons.brush,
+  "fragrances": Icons.local_florist,
+  "furniture": Icons.weekend,
+  "groceries": Icons.shopping_cart,
+  "home-decoration": Icons.chair,
+  "kitchen-accessories": Icons.kitchen,
+  "laptops": Icons.laptop,
+  "mens-shirts": Icons.male,
+  "mens-shoes": Icons.directions_run,
+  "mens-watches": Icons.watch,
+  "mobile-accessories": Icons.headset,
+  "motorcycle": Icons.motorcycle,
+  "skin-care": Icons.spa,
+  "smartphones": Icons.smartphone,
+  "sports-accessories": Icons.sports_handball,
+  "sunglasses": Icons.wb_sunny,
+  "tablets": Icons.tablet,
+  "tops": Icons.checkroom,
+  "vehicle": Icons.directions_car,
+  "womens-bags": Icons.shopping_bag,
+  "womens-dresses": Icons.checkroom,
+  "womens-jewellery": Icons.diamond,
+  "womens-shoes": Icons.directions_run,
+  "womens-watches": Icons.watch,
+};

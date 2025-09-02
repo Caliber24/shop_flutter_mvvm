@@ -1,3 +1,10 @@
+/// این کلاس وظیفه مدیریت وضعیت کلی اپلیکیشن رو برعهده داره.
+/// وضعیت‌ها در قالب enum به نام [AppStatus] نگهداری میشن:
+/// - firstTime → وقتی کاربر برای اولین بار اپلیکیشن رو باز می‌کنه.
+/// - loading → زمانی که اپلیکیشن در حال بارگذاری اولیه هست.
+/// - loggedOut → وقتی کاربر وارد نشده.
+/// - loggedIn → وقتی کاربر وارد شده.
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_provider.dart';
@@ -10,13 +17,11 @@ class AppStateProvider extends ChangeNotifier {
   AppStatus status = AppStatus.loading;
 
   AppStateProvider(this.auth) {
-    // همگام با AuthProvider
     auth.addListener(_onAuthChanged);
     _init();
   }
 
   void _onAuthChanged() {
-    // اگر در مرحله‌ی onboarding نیستیم، بر اساس لاگین/لاگ‌اوت وضعیت بده
     if (status != AppStatus.firstTime) {
       final next = auth.isLoggedIn ? AppStatus.loggedIn : AppStatus.loggedOut;
       if (status != next) {
@@ -27,17 +32,14 @@ class AppStateProvider extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    // توکن‌ها و کاربر را از storage بخوان
     await auth.loadFromStorage();
 
-    // مود دمو؟
     if (Constants.resetFirstTimeForDemo == true) {
       status = AppStatus.firstTime;
       notifyListeners();
       return;
     }
 
-    // وضعیت first_time
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('first_time') ?? true;
 
@@ -52,7 +54,7 @@ class AppStateProvider extends ChangeNotifier {
   Future<void> setFirstTimeDone() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_time', false);
-    status = AppStatus.loggedOut; // بعد از onboarding -> صفحه لاگین
+    status = AppStatus.loggedOut;
     notifyListeners();
   }
 

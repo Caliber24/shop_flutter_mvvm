@@ -1,11 +1,13 @@
+// ویجتی ساده برای نمایش هدر یک بخش با عنوان و گزینه اکشن اختیاری.
+
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? actionText;
-  final VoidCallback? onAction;
-  const SectionHeader(this.title, {super.key, this.actionText, this.onAction});
+  final VoidCallback? onActionTap;
+  const SectionHeader(this.title, {super.key, this.actionText, this.onActionTap});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class SectionHeader extends StatelessWidget {
           const Spacer(),
           if (actionText != null)
             GestureDetector(
-              onTap: onAction,
+              onTap: onActionTap,
               child: Text(actionText!,
                   style: const TextStyle(color: AppColors.gray, fontSize: 12)),
             ),

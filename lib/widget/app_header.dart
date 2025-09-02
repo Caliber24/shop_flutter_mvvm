@@ -1,61 +1,171 @@
-// lib/widget/app_header.dart
+//  ویدجت مربوط به هدر بالای صفحه که قابلبیت سرچ هم در آن پیاده سازی شده است
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import '../viewmodel/app_header_viewmodel.dart';
 import '../utils/colors.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
-  final String subtitle;
-  final String? avatarUrlOverride;
+  final String username;
+  final String profileImageUrl;
+  final Function(String) onSearchNavigate;
 
   const AppHeader({
     super.key,
-    this.subtitle = 'We picked a theme for you',
-    this.avatarUrlOverride,
+    required this.username,
+    required this.profileImageUrl,
+    required this.onSearchNavigate,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(100);
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final fullName = (auth.me != null)
-        ? '${auth.me!.firstName} ${auth.me!.lastName}'.trim()
-        : 'Guest';
-    final avatar = avatarUrlOverride ??
-        (auth.me?.image?.isNotEmpty == true ? auth.me!.image : null) ??
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=256&q=80';
+    final viewModel = context.watch<AppHeaderViewModel>();
 
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      centerTitle: false,
-      titleSpacing: 16,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(subtitle, style: const TextStyle(color: AppColors.gray, fontSize: 12)),
-          const SizedBox(height: 2),
-          Text(
-            fullName.isEmpty ? 'User' : fullName,
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Container(
-            padding: const EdgeInsets.all(2), // ضخامت Border
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.yellowPrimary, width: 2),
-            ),
-            child: CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar)),
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          color: AppColors.background.withOpacity(0.4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              AnimatedSlide(
+                offset: viewModel.searchMode ? const Offset(-0.2,0) : Offset.zero,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: AnimatedOpacity(
+                  opacity: viewModel.searchMode ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    "Hi،$username",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: viewModel.searchMode
+                          ? Colors.white.withOpacity(0.3)
+                          : Colors.transparent,
+                      width: 1,
+                    ),
+                    boxShadow: viewModel.searchMode
+                        ? [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                        spreadRadius: 2,
+                      ),
+                    ]
+                        : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: viewModel.searchController,
+                    focusNode: viewModel.focusNode,
+                    onTap: () {
+                      viewModel.searchMode = true;
+                    },
+                    onSubmitted: (query) =>
+                        viewModel.onSearchSubmitted(context, query, onSearchNavigate),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                      hintText: 'Search...',
+                      hintStyle: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 15,
+                      ),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(22),
+                        borderSide: BorderSide.none,
+                      ),
+                      suffixIcon: viewModel.searchMode
+                          ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white70),
+                        onPressed: () {
+                          viewModel.clearSearch();
+                        },
+                      )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              AnimatedSlide(
+                offset: viewModel.searchMode ? const Offset(0.2,0) : Offset.zero,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: AnimatedOpacity(
+                  opacity: viewModel.searchMode ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () {},
+                    splashColor: Colors.white24,
+                    child: Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.yellowAccent,
+                          width: 2.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Image.network(
+                          profileImageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: Colors.grey,
+                            child: const Icon(Icons.person, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

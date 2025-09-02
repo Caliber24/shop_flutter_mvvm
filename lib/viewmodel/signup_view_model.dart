@@ -1,10 +1,10 @@
+// SignUpViewModel: مدیریت فرم ثبت‌نام، شامل کنترلرهای ورودی، وضعیت بارگذاری (loading) و امکان نمایش/مخفی کردن پسورد.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 
-/// ویومدل ثبت‌نام: مدیریت فرم/ولیدیشن/فراخوانی signup
 class SignUpViewModel extends ChangeNotifier {
   final emailCtrl = TextEditingController();
   final usernameCtrl = TextEditingController();

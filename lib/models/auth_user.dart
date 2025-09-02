@@ -5,7 +5,6 @@ class AuthUser {
   final String firstName;
   final String lastName;
   final String image;
-
   AuthUser({
     required this.id,
     required this.username,
@@ -14,7 +13,6 @@ class AuthUser {
     required this.lastName,
     required this.image,
   });
-
   factory AuthUser.fromJson(Map<String, dynamic> j) => AuthUser(
     id: j['id'],
     username: j['username'] ?? '',
@@ -23,7 +21,6 @@ class AuthUser {
     lastName: j['lastName'] ?? '',
     image: j['image'] ?? '',
   );
-
   Map<String, dynamic> toJson() => {
     'id': id,
     'username': username,
@@ -32,4 +29,18 @@ class AuthUser {
     'lastName': lastName,
     'image': image,
   };
+
+  AuthUser copyWith({
+    String? firstName,
+    String? lastName,
+    String? image,
+  }) =>
+      AuthUser(
+        id: id,
+        username: username,
+        email: email,
+        firstName: firstName ?? this.firstName,
+        lastName: lastName ?? this.lastName,
+        image: image ?? this.image,
+      );
 }

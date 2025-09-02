@@ -1,36 +1,65 @@
+// ProductProvider:
+// این کلاس وظیفه مدیریت لیست محصولات رو برعهده داره.
+// از [ApiService] برای گرفتن محصولات از سرور استفاده می‌کنه و نتایج رو نگه می‌داره.
 import 'package:flutter/foundation.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 
 class ProductProvider extends ChangeNotifier {
   final ApiService _api;
-  ProductProvider(this._api);
+  final String? category;
 
-  List<Product> _popular = [];
+  ProductProvider(this._api, {this.category}) {
+    loadProducts();
+  }
+
+  List<Product> _allProducts = [];
+  List<Product> _displayedProducts = [];
   bool _loading = false;
   String? _error;
+  int _displayCount = 10;
 
-  List<Product> get popular => _popular;
+  List<Product> get displayedProducts => _displayedProducts;
   bool get loading => _loading;
   String? get error => _error;
+  bool get canLoadMore => _displayCount < _allProducts.length;
 
-  Future<void> loadPopular({int limit = 12, bool force = false}) async {
+  Future<void> loadProducts({bool force = false}) async {
     if (_loading) return;
-    if (_popular.isNotEmpty && !force) return;
+    if (_allProducts.isNotEmpty && !force) {
+      _updateDisplayed();
+      return;
+    }
 
     _loading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final j = await _api.get('/products?limit=$limit&select=title,price,rating,thumbnail');
-      final List items = (j['products'] as List?) ?? [];
-      _popular = items.map((e) => Product.fromJson(e as Map<String, dynamic>)).toList();
+      List<Product> r;
+      if (category == null) {
+        r = await _api.fetchPopularProducts(limit: 50);
+      } else {
+        r = await _api.fetchProductsByCategory(category!);
+      }
+      _allProducts = r;
+      _updateDisplayed();
     } catch (e) {
-      _error = 'Failed to load products';
+      _error = "Failed to load products";
+      _displayedProducts = [];
     } finally {
       _loading = false;
       notifyListeners();
     }
+  }
+
+  void loadMore() {
+    _displayCount += 10;
+    _updateDisplayed();
+    notifyListeners();
+  }
+
+  void _updateDisplayed() {
+    _displayedProducts = _allProducts.take(_displayCount).toList();
   }
 }

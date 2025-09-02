@@ -1,3 +1,4 @@
+// ویجت بک گراند خمیده در بالای صفحه ثبت نام و لاگین
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
@@ -53,7 +54,6 @@ class _HeaderPainter extends CustomPainter {
   @override bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// کارت شیشه‌ای روی پس‌زمینه‌ی تیره
 class FrostedCard extends StatelessWidget {
   final Widget child;
   const FrostedCard({super.key, required this.child});

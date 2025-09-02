@@ -1,10 +1,10 @@
+// صفحه ثبت نام در برنامه
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../viewmodel/signup_view_model.dart';
 import '../widget/auth_widgets.dart';
 
-/// صفحه‌ی ثبت‌نام: بعد از موفقیت -> برگشت به لاگین + پیام موفقیت
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
 

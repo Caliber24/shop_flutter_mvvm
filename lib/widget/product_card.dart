@@ -1,21 +1,23 @@
-// lib/widget/product_card.dart
+// ویجتی تعاملی برای نمایش محصول در لیست یا گرید.
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../viewmodel/cart_viewmodel.dart';
 import '../utils/colors.dart';
+import '../models/cart_item.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
-  final VoidCallback? onAdd;
 
   const ProductCard({
     super.key,
     required this.product,
     this.margin,
     this.onTap,
-    this.onAdd,
   });
 
   @override
@@ -28,7 +30,22 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartViewModel>();
     final p = widget.product;
+
+    final quantity = cart.items
+        .firstWhere(
+          (e) => e.product.id == p.id,
+      orElse: () => CartItem(product: p, quantity: 0),
+    )
+        .quantity;
+
+    final width = MediaQuery.of(context).size.width;
+
+    final pillWidth = (width * 0.15).clamp(60, 120) as double;
+    final pillHeight = (width * 0.08).clamp(30, 50) as double;
+    final btnSize = (width * 0.08).clamp(30, 50) as double;
+    final fontSize = (width * 0.03).clamp(10.0, 16.0).toDouble();
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
@@ -36,47 +53,44 @@ class _ProductCardState extends State<ProductCard> {
       child: AnimatedScale(
         duration: const Duration(milliseconds: 150),
         scale: _pressed ? 0.98 : (_hover ? 1.02 : 1.0),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTapCancel: () => setState(() => _pressed = false),
-          onTap: widget.onTap,
-          child: Container(
-            margin: widget.margin ?? EdgeInsets.zero,
-            decoration: BoxDecoration(
-              color: AppColors.itemBackground,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.grayBlack),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(_hover ? 0.35 : 0.25),
-                  blurRadius: _hover ? 16 : 8,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ===== Image area (stacked overlays)
-                  Flexible(
-                    flex: 6,
+        child: Container(
+          margin: widget.margin ?? EdgeInsets.zero,
+          decoration: BoxDecoration(
+            color: AppColors.itemBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.grayBlack),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_hover ? 0.35 : 0.25),
+                blurRadius: _hover ? 16 : 8,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 6,
+                  child: GestureDetector(
+                    onTap: widget.onTap,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // تصویر
                         Image.network(
                           p.thumbnail,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             color: AppColors.grayBlack,
                             alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image_rounded, color: Colors.white54),
+                            child: const Icon(
+                              Icons.broken_image_rounded,
+                              color: Colors.white54,
+                            ),
                           ),
                         ),
-                        // گرادیان پایین برای خوانایی
                         Positioned.fill(
                           child: IgnorePointer(
                             child: DecoratedBox(
@@ -95,7 +109,6 @@ class _ProductCardState extends State<ProductCard> {
                             ),
                           ),
                         ),
-                        // چیپ امتیاز
                         Positioned(
                           top: 8,
                           left: 8,
@@ -103,11 +116,14 @@ class _ProductCardState extends State<ProductCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                                const Icon(Icons.star_rounded,
+                                    color: Colors.amber, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
                                   p.rating.toStringAsFixed(1),
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700),
                                 ),
                               ],
                             ),
@@ -116,42 +132,72 @@ class _ProductCardState extends State<ProductCard> {
                       ],
                     ),
                   ),
-
-                  // ===== Info area
-                  Flexible(
-                    flex: 5,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // عنوان
-                          Text(
-                            p.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              height: 1.2,
+                ),
+                Flexible(
+                  flex: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: widget.onTap,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 4, bottom: 8),
+                            child: Text(
+                              p.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                                fontSize: fontSize,
+                              ),
                             ),
                           ),
-
-                          // قیمت + دکمه Add
-                          Row(
-                            children: [
-                              _PricePill(price: p.price),
-                              const Spacer(),
-                              _AddMiniButton(onPressed: widget.onAdd),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            _PricePill(price: p.price, width: pillWidth - 15.5, height: pillHeight, fontSize: fontSize-2.2),
+                            const Spacer(),
+                            if (quantity > 0)
+                              Row(
+                                children: [
+                                  _QuantityButton(icon: Icons.remove, onTap: () => cart.removeOne(p), size: btnSize),
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: EdgeInsets.symmetric(horizontal: btnSize * 0.4, vertical: btnSize * 0.2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white24,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: fontSize),
+                                    ),
+                                  ),
+                                  _QuantityButton(icon: Icons.add, onTap: () => cart.addProduct(p), size: btnSize),
+                                ],
+                              )
+                            else
+                              GestureDetector(
+                                onTap: () => cart.addProduct(p),
+                                behavior: HitTestBehavior.opaque,
+                                child: _AddMiniButton(size: btnSize),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -160,7 +206,7 @@ class _ProductCardState extends State<ProductCard> {
   }
 }
 
-/// شیشه‌ای کوچک برای امتیاز/برچسب‌ها
+
 class _FrostedChip extends StatelessWidget {
   final Widget child;
   const _FrostedChip({required this.child});
@@ -185,15 +231,20 @@ class _FrostedChip extends StatelessWidget {
   }
 }
 
-/// چیپ قیمت برجسته
 class _PricePill extends StatelessWidget {
   final double price;
-  const _PricePill({required this.price});
+  final double width;
+  final double height;
+  final double fontSize;
+
+  const _PricePill({required this.price, required this.width, required this.height, required this.fontSize});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      width: width,
+      height: height,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: AppColors.yellowPrimary,
         borderRadius: BorderRadius.circular(10),
@@ -207,30 +258,50 @@ class _PricePill extends StatelessWidget {
       ),
       child: Text(
         '€${price.toStringAsFixed(2)}',
-        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900),
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: fontSize),
       ),
     );
   }
 }
 
-/// دکمه Add کوچک
 class _AddMiniButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  const _AddMiniButton({this.onPressed});
+  final double size;
+  const _AddMiniButton({super.key, required this.size});
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white.withOpacity(0.10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
-        child: const SizedBox(
-          height: 36,
-          width: 36,
-          child: Icon(Icons.add_rounded, color: Colors.white),
+      child: SizedBox(
+        height: size,
+        width: size,
+        child: Icon(Icons.add_rounded, color: Colors.white, size: size * 0.5),
+      ),
+    );
+  }
+}
+
+class _QuantityButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final double size;
+
+  const _QuantityButton({required this.icon, required this.onTap, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: size,
+        width: size,
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(12),
         ),
+        alignment: Alignment.center,
+        child: Icon(icon, color: Colors.white, size: size * 0.5),
       ),
     );
   }

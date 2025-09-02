@@ -1,3 +1,4 @@
+// استایل های پیش فرض که بر روی تم ایجاد می شوند در این قسمت لحاظ می شوند
 import 'package:flutter/material.dart';
 import 'colors.dart';
 

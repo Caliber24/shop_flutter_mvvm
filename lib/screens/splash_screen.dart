@@ -1,4 +1,5 @@
-// lib/screens/splash_screen.dart
+// SplashScreen:
+// صفحه معرفی (Onboarding) اپلیکیشن برای کاربران جدید.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/colors.dart';
@@ -134,7 +135,6 @@ class SplashScreen extends StatelessWidget {
                         TextButton(
                           onPressed: () async {
                             if (viewModel.currentPage == splashData.length - 1) {
-                              // فقط وقتی به آخر رسیدیم: first_time=false و برو لاگین
                               await context.read<AppStateProvider>().setFirstTimeDone();
                               if (!context.mounted) return;
                               Navigator.pushReplacement(

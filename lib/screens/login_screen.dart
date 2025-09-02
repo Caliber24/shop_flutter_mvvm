@@ -1,3 +1,4 @@
+// صفحه لاگین
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_flutter_mvvm/screens/app_shell.dart';
@@ -6,7 +7,6 @@ import '../utils/colors.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widget/auth_widgets.dart';
 import 'sign_up_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
